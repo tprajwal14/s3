@@ -1,31 +1,33 @@
-name: Deploy Static Website to S3
+name: Deploy to S3
 
 on:
   push:
     branches:
-      - main  # Runs on push to the main branch
+      - main  # Trigger deployment when changes are pushed to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      # Checkout code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
+      # Set up AWS credentials using AWS CLI
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Change to your region if necessary
 
-      - name: Build Project (React, Angular, Vue)
-        run: |
-          npm install
-          npm run build
-        env:
-          CI: false
-
+      # Sync files from your repo to the S3 bucket
       - name: Deploy to S3
         run: |
-          aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }} --delete
+          aws s3 sync ./build s3://maaaaaaaaazziiiiiiii --delete  # Replace with the path to your build directory
+
+      # Invalidate CloudFront cache to reflect changes immediately
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id YOUR_CLOUDFRONT_ID --paths "/*"
