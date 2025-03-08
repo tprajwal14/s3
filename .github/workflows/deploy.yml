@@ -3,7 +3,7 @@ name: Deploy Static Website to S3
 on:
   push:
     branches:
-      - main  # Runs on push to main branch
+      - main  # Runs on push to the main branch
 
 jobs:
   deploy:
@@ -15,8 +15,9 @@ jobs:
 
       - name: Install AWS CLI
         run: |
-          sudo apt update
-          sudo apt install -y awscli
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
 
       - name: Build Project (React, Angular, Vue)
         run: |
@@ -28,5 +29,3 @@ jobs:
       - name: Deploy to S3
         run: |
           aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }} --delete
-
-      
