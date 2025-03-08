@@ -1,31 +1,32 @@
-name: deploy static web
+name: Deploy Static Website to S3
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main  # Runs on push to main branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'  # Use the appropriate Node.js version for your project
-
-      - name: Install dependencies
-        run: npm install
+      - name: Install AWS CLI
+        run: |
+          sudo apt update
+          sudo apt install -y awscli
 
       - name: Build Project (React, Angular, Vue)
-        run: npm run build  # This should generate the 'dist' or 'build' directory
+        run: |
+          npm install
+          npm run build
+        env:
+          CI: false
 
       - name: Deploy to S3
         run: |
-          aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete  # Assuming the build directory is 'build'
+          aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }} --delete
+
+      
